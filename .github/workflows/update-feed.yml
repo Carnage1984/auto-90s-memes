@@ -1,13 +1,12 @@
 name: Update Meme RSS Feed
 
 on:
-  # Regenerate feed every 4 hours (at minute 0)
+  # Regenerate feed every 4 hours (at minute 0 UTC)
   schedule:
     - cron: '0 */4 * * *'
-  # Also regenerate any time you manually push to main
+  # Also whenever main is pushed or your FB workflow finishes
   push:
     branches: [ main ]
-  # And after your “Post Meme to Facebook” workflow completes
   workflow_run:
     workflows: [ "Post Meme to Facebook" ]
     types:     [ completed ]
@@ -23,35 +22,34 @@ jobs:
         shell: bash
         run: |
           python3 - << 'PYCODE'
-          import glob, os, time
-          from xml.sax.saxutils import escape
+import glob, os, time
+from xml.sax.saxutils import escape
 
-          items = []
-          # Grab the last 7 memes
-          for img in sorted(glob.glob("memes/*.jpg"))[-7:]:
-              date = os.path.basename(img).split(".")[0]
-              url  = f"https://raw.githubusercontent.com/Carnage1984/auto-90s-memes/main/{img}"
-              items.append(f"""
-              <item>
-                <title>90s Meme for {escape(date)}</title>
-                <link>{escape(url)}</link>
-                <pubDate>{time.strftime('%a, %d %b %Y %H:%M:%S +0000', time.gmtime())}</pubDate>
-              </item>""")
+items = []
+for img in sorted(glob.glob("memes/*.jpg"))[-7:]:
+    date = os.path.basename(img).split(".")[0]
+    url  = f"https://raw.githubusercontent.com/Carnage1984/auto-90s-memes/main/{img}"
+    items.append(f"""
+  <item>
+    <title>90s Meme for {escape(date)}</title>
+    <link>{escape(url)}</link>
+    <pubDate>{time.strftime('%a, %d %b %Y %H:%M:%S +0000', time.gmtime())}</pubDate>
+  </item>""")
 
-          feed = f"""<?xml version="1.0" encoding="UTF-8"?>
-          <rss version="2.0"><channel>
-            <title>Epoch Nostalgia 90s Memes</title>
-            <link>https://github.com/Carnage1984/auto-90s-memes</link>
-            <description>Daily 90s meme throwback</description>
-            {''.join(items)}
-          </channel></rss>"""
+feed = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel>
+  <title>Epoch Nostalgia 90s Memes</title>
+  <link>https://github.com/Carnage1984/auto-90s-memes</link>
+  <description>Daily 90s meme throwback</description>
+  {''.join(items)}
+</channel></rss>"""
 
-          with open("feed.xml", "w") as f:
-              f.write(feed)
-          PYCODE
+with open("feed.xml", "w") as f:
+    f.write(feed)
+PYCODE
 
       - name: Commit & push RSS
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "chore: schedule RSS update every 4h"
+          commit_message: chore: schedule RSS update every 4h
           file_pattern: feed.xml
