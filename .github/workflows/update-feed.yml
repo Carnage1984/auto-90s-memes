@@ -1,9 +1,13 @@
 name: Update Meme RSS Feed
 
+# Run on every push (for testing) and after your "Post Meme to Facebook" workflow
 on:
+  push:
+    branches: [ main ]
   workflow_run:
-    workflows: ["Post Meme to Facebook"]
-    types: [completed]
+    workflows: [ "Post Meme to Facebook" ]
+    types:
+      - completed
 
 jobs:
   build-rss:
