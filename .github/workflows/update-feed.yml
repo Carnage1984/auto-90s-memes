@@ -1,14 +1,11 @@
 name: Update Meme RSS Feed
 
 on:
-  # Run every 4 hours at minute 0 UTC
   schedule:
     - cron: "0 */4 * * *"
-  # Also regenerate on any push to main
   push:
     branches:
       - main
-  # And after your “Post Meme to Facebook” workflow completes
   workflow_run:
     workflows:
       - "Post Meme to Facebook"
