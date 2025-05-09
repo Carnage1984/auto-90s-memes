@@ -1,25 +1,15 @@
 name: Update Meme RSS Feed
 
 on:
-  workflow_dispatch:            # ← enables the “Run workflow” button
+  workflow_dispatch:     # ← manual trigger
   schedule:
-    - cron: "0 */4 * * *"
-  push:
-    branches:
-      - main
-  workflow_run:
-    workflows:
-      - Post Meme to Facebook
-    types:
-      - completed
+    - cron: "*/15 * * * *"  # ← every 15 minutes for quick testing
 
 jobs:
   build-rss:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v3
-
+      - uses: actions/checkout@v3
       - name: Build RSS feed
         shell: bash
         run: |
@@ -29,29 +19,16 @@ jobs:
 
           items = []
           for img in sorted(glob.glob("memes/*.jpg"))[-7:]:
-              date = os.path.basename(img).split(".")[0]
+              d = os.path.basename(img).split(".")[0]
               url = f"https://raw.githubusercontent.com/Carnage1984/auto-90s-memes/main/{img}"
-              items.append(f"""
-            <item>
-              <title>90s Meme for {escape(date)}</title>
-              <link>{escape(url)}</link>
-              <pubDate>{time.strftime('%a, %d %b %Y %H:%M:%S +0000', time.gmtime())}</pubDate>
-            </item>""")
+              items.append(f"<item><title>90s Meme for {escape(d)}</title><link>{escape(url)}</link><pubDate>{time.strftime('%a, %d %b %Y %H:%M:%S +0000', time.gmtime())}</pubDate></item>")
 
-          feed = f"""<?xml version="1.0" encoding="UTF-8"?>
-          <rss version="2.0"><channel>
-            <title>Epoch Nostalgia 90s Memes</title>
-            <link>https://github.com/Carnage1984/auto-90s-memes</link>
-            <description>Daily 90s meme throwback</description>
-            {''.join(items)}
-          </channel></rss>"""
-
-          with open("feed.xml", "w") as f:
-              f.write(feed)
+          feed = "<?xml version='1.0'?><rss version='2.0'><channel>" + "".join(items) + "</channel></rss>"
+          echo "$feed" > feed.xml
           PYCODE
 
       - name: Commit & push RSS
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "chore: schedule RSS update every 4h"
+          commit_message: "chore: test RSS feed"
           file_pattern: feed.xml
