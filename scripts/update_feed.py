@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-import glob
-import os
-import time
+import glob, os, time
 from xml.sax.saxutils import escape
 
 # ── Channel metadata ───────────────────────────────────────
@@ -11,13 +9,13 @@ DESCRIPTION = "Daily 90s meme throwback"
 
 # ── Build the <item> list ──────────────────────────────────
 items = []
-# grab the last 7 .jpg filenames under memes/
-for img in sorted(glob.glob("memes/*.jpg"))[-7:]:
+files = sorted(glob.glob("memes/*.jpg") + glob.glob("memes/*.png"))[-7:]
+for img in files:
     name     = os.path.splitext(os.path.basename(img))[0]
     raw_url  = f"https://raw.githubusercontent.com/Carnage1984/auto-90s-memes/main/{img}"
     pub_date = time.strftime(
         "%a, %d %b %Y %H:%M:%S +0000",
-        time.gmtime(os.path.getmtime(img))  # use the file’s own mtime
+        time.gmtime(os.path.getmtime(img))
     )
     items.append(
         "  <item>\n"
@@ -34,7 +32,7 @@ with open("feed.xml", "w", encoding="utf-8") as f:
     f.write("<channel>\n")
     f.write(f"  <title>{escape(TITLE)}</title>\n")
     f.write(f"  <link>{escape(LINK)}</link>\n")
-    f.write(f"  <description>{escape(DESCRIPTION)}</description>\n")
+    f.write(f"  <description>{escape(DESCRIPTION)}</description>\n\n")
     f.write("\n".join(items))
     f.write("\n</channel>\n")
     f.write("</rss>\n")
