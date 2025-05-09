@@ -1,9 +1,12 @@
 name: Update Meme RSS Feed
 
 on:
-  workflow_dispatch:      # manual trigger
+  workflow_dispatch:
   schedule:
-    - cron: '0 */4 * * *' # every 4 hours
+    - cron: '0 */4 * * *'
+
+permissions:
+  contents: write
 
 jobs:
   build-rss:
@@ -19,5 +22,6 @@ jobs:
       - name: Commit & push RSS
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: 'chore: fix build step to call script'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          commit_message: 'chore: update RSS feed'
           file_pattern: 'feed.xml'
