@@ -12,10 +12,8 @@ IMAGE_MODEL = "stabilityai/stable-diffusion-2" # your chosen text2img model
 
 # ── Caption generation ───────────────────────────────────────────────────────
 def generate_caption() -> str:
-    url = (
-        "https://api-inference.huggingface.co/pipeline/text-generation"
-        f"?model={TEXT_MODEL}"
-    )
+    # correct pipeline URL: /pipeline/text-generation/{model}
+    url = f"https://api-inference.huggingface.co/pipeline/text-generation/{TEXT_MODEL}"
     payload = {
         "inputs": "One short, nostalgic 90s meme caption",
         "options": {"wait_for_model": True}
@@ -26,7 +24,7 @@ def generate_caption() -> str:
         json=payload
     )
     resp.raise_for_status()
-    # pipeline returns [{ "generated_text": "..." }]
+    # pipeline returns a list of dicts
     text = resp.json()[0]["generated_text"]
     return text.strip().split("\n")[0]
 
