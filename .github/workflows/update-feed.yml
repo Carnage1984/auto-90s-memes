@@ -1,44 +1,23 @@
 name: Update Meme RSS Feed
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:      # manual trigger
   schedule:
-    - cron: '0 */4 * * *'   # every 4 hours
+    - cron: '0 */4 * * *' # every 4 hours
 
 jobs:
   build-rss:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Build RSS feed
         shell: bash
-        run: |
-          python3 - << 'PYCODE'
-          import glob, os, time
-          from xml.sax.saxutils import escape
-
-          items = []
-          for img in sorted(glob.glob("memes/*.jpg"))[-7:]:
-              d = os.path.basename(img).split(".")[0]
-              url = f"https://raw.githubusercontent.com/Carnage1984/auto-90s-memes/main/{img}"
-              items.append(
-                  f"<item><title>90s Meme for {escape(d)}</title>"
-                  f"<link>{escape(url)}</link>"
-                  f"<pubDate>{time.strftime('%a, %d %b %Y %H:%M:%S +0000', time.gmtime())}</pubDate>"
-                  "</item>"
-              )
-
-          feed = "<?xml version='1.0'?><rss version='2.0'><channel>" + "".join(items) + "</channel></rss>"
-
-          # write out the file instead of shell‐echo
-          with open("feed.xml", "w") as f:
-              f.write(feed)
-          PYCODE
+        run: python3 scripts/update_feed.py > feed.xml
 
       - name: Commit & push RSS
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: 'chore: update RSS feed'
-          file_pattern: feed.xml
+          commit_message: 'chore: fix build step to call script'
+          file_pattern: 'feed.xml'
