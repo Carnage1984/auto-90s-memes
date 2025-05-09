@@ -21,6 +21,5 @@ jobs:
       - name: Commit & push RSS
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          token:          ${{ secrets.GITHUB_TOKEN }}
           commit_message: 'chore: update RSS feed'
           file_pattern:   'feed.xml'
