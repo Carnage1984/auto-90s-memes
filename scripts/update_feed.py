@@ -1,28 +1,40 @@
-# scripts/update_feed.py
-
-import glob, os, time
+#!/usr/bin/env python3
+import glob
+import os
+import time
 from xml.sax.saxutils import escape
 
-# Build items for the last 7 memes
+# ── Channel metadata ───────────────────────────────────────
+TITLE       = "Epoch Nostalgia 90s Memes"
+LINK        = "https://github.com/Carnage1984/auto-90s-memes"
+DESCRIPTION = "Daily 90s meme throwback"
+
+# ── Build the <item> list ──────────────────────────────────
 items = []
+# grab the last 7 .jpg filenames under memes/
 for img in sorted(glob.glob("memes/*.jpg"))[-7:]:
-    date = os.path.basename(img).split(".")[0]
-    url = f"https://raw.githubusercontent.com/Carnage1984/auto-90s-memes/main/{img}"
-    items.append(f"""
-<item>
-  <title>90s Meme for {escape(date)}</title>
-  <link>{escape(url)}</link>
-  <pubDate>{time.strftime('%a, %d %b %Y %H:%M:%S +0000', time.gmtime())}</pubDate>
-</item>""")
+    name     = os.path.splitext(os.path.basename(img))[0]
+    raw_url  = f"https://raw.githubusercontent.com/Carnage1984/auto-90s-memes/main/{img}"
+    pub_date = time.strftime(
+        "%a, %d %b %Y %H:%M:%S +0000",
+        time.gmtime(os.path.getmtime(img))  # use the file’s own mtime
+    )
+    items.append(
+        "  <item>\n"
+        f"    <title>90s Meme: {escape(name)}</title>\n"
+        f"    <link>{escape(raw_url)}</link>\n"
+        f"    <pubDate>{pub_date}</pubDate>\n"
+        "  </item>"
+    )
 
-feed = f"""<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0"><channel>
-  <title>Epoch Nostalgia 90s Memes</title>
-  <link>https://github.com/Carnage1984/auto-90s-memes</link>
-  <description>Daily 90s meme throwback</description>
-  {''.join(items)}
-</channel></rss>"""
-
-# Write out feed.xml
-with open("feed.xml", "w") as f:
-    f.write(feed)
+# ── Write out feed.xml ─────────────────────────────────────
+with open("feed.xml", "w", encoding="utf-8") as f:
+    f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+    f.write('<rss version="2.0">\n')
+    f.write("<channel>\n")
+    f.write(f"  <title>{escape(TITLE)}</title>\n")
+    f.write(f"  <link>{escape(LINK)}</link>\n")
+    f.write(f"  <description>{escape(DESCRIPTION)}</description>\n")
+    f.write("\n".join(items))
+    f.write("\n</channel>\n")
+    f.write("</rss>\n")
