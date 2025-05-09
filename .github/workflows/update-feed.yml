@@ -2,8 +2,9 @@ name: Update Meme RSS Feed
 
 on:
   workflow_dispatch:     # ← manual trigger
-  schedule:
-    - cron: "*/15 * * * *"  # ← every 15 minutes for quick testing
+        schedule:
+          - cron: "0 */4 * * *"
+
 
 jobs:
   build-rss:
