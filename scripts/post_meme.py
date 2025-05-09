@@ -47,12 +47,11 @@ def overlay_caption(img: Image.Image, caption: str) -> Image.Image:
     w, h = draw.textsize(caption, font=font)
     x = (img.width - w) // 2
     y = img.height - h - 10
-    # semi‐transparent box behind text
     draw.rectangle((x-5, y-5, x+w+5, y+h+5), fill=(0,0,0,180))
     draw.text((x, y), caption, font=font, fill=(255,255,255))
     return img
 
-# ── Main: generate, save, commit-ready ───────────────────────────────────────
+# ── Main: generate, save ─────────────────────────────────────────────────────
 def main():
     caption = generate_caption()
     img     = generate_image(caption)
